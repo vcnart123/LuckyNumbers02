@@ -3,181 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全方位數字吉凶分析 (進化版 2.1)</title>
+    <title>全方位數字分析</title>
     <style>
         :root {
             --bg-color: #f0f2f5;
             --card-bg: #fff;
             --text-main: #333;
             --text-sub: #666;
-            --red: #e74c3c;
-            --blue: #3498db;
-            --green: #2ecc71;
-            --black: #7f8c8d;
-            --border: #ddd;
+            
+            /* 顏色定義 */
+            --red: #d32f2f;       /* 吉 (紅) */
+            --blue: #1976d2;      /* 模組1/2 的凶 (藍) */
+            --green: #2ecc71;     /* 吉凶參半 (綠) */
+            --black: #7f8c8d;     /* 中性/灰 */
+            
+            /* 八星模組專用顏色 */
+            --star-bad: #1976d2;  /* 八星凶數 (藍) */
         }
 
         body {
             font-family: "Microsoft JhengHei", sans-serif;
             background-color: var(--bg-color);
             margin: 0;
-            padding: 10px;
+            padding: 15px;
             box-sizing: border-box;
-            font-size: 15px;
         }
 
-        /* --- 輸入區 --- */
+        /* --- 共用輸入區 --- */
         .input-container {
             max-width: 600px;
-            margin: 0 auto 15px auto;
+            margin: 0 auto 25px auto;
             text-align: center;
             background: var(--card-bg);
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        h1 { margin: 0 0 5px 0; font-size: 1.4rem; color: #2c3e50; }
-        .sub-hint { font-size: 0.85rem; color: #999; margin-bottom: 10px; }
+        h1 { margin: 0 0 10px 0; font-size: 1.6rem; color: #2c3e50; }
+        .sub-hint { font-size: 0.9rem; color: #999; margin-bottom: 15px; }
 
-        .input-group { display: flex; gap: 8px; justify-content: center; }
-        input { padding: 8px; font-size: 1rem; width: 65%; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 8px 16px; font-size: 1rem; background-color: #34495e; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        .input-group { display: flex; gap: 10px; justify-content: center; }
+        input { padding: 10px; font-size: 1.1rem; width: 70%; border: 2px solid #eee; border-radius: 6px; transition: border 0.3s; }
+        input:focus { border-color: #34495e; outline: none; }
+        button { padding: 10px 24px; font-size: 1.1rem; background-color: #34495e; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
         button:hover { opacity: 0.9; }
 
-        /* --- 單一顯示模式 (保留原樣) --- */
-        .dashboard-single { display: flex; gap: 10px; align-items: flex-start; }
-        .module-card {
-            flex: 1; background: #fff; border-radius: 8px; padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid #999;
-        }
-        .module-card:nth-child(1) { border-top-color: #2c3e50; }
-        .module-card:nth-child(2) { border-top-color: #7f8c8d; }
-        .module-card:nth-child(3) { border-top-color: #bdc3c7; }
+        /* =========================================
+           MODE A: 單一數值
+           ========================================= */
+        .dashboard-classic { display: flex; gap: 20px; align-items: flex-start; }
         
-        .mod-title { font-size: 1.1rem; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; text-align: center; }
-        .big-num { font-size: 2.5rem; font-weight: bold; text-align: center; display: block; margin: 5px 0; }
-        .badge { display: inline-block; font-size: 0.9rem; padding: 2px 8px; border-radius: 12px; color: #fff; vertical-align: middle; margin-left: 5px; position: relative; top: -5px;}
-        .desc-box { background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 0.9rem; color: #555; line-height: 1.5; white-space: pre-line; }
+        .classic-card {
+            flex: 1; background: #fff; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 6px solid #999;
+        }
+        .classic-card:nth-child(1) { border-top-color: #2c3e50; }
+        .classic-card:nth-child(2) { border-top-color: #7f8c8d; }
+        .classic-card:nth-child(3) { border-top-color: #bdc3c7; }
 
-        /* --- 批次列表模式 (Compact Layout) --- */
-        .batch-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+        .classic-title { font-size: 1.3rem; font-weight: bold; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px; text-align: center; color: #333; }
+        
+        /* 經典版的大數字與標籤 */
+        .classic-num { font-size: 4rem; font-weight: bold; text-align: center; display: block; margin: 10px 0; line-height: 1; }
+        .classic-badge { display: inline-block; font-size: 1.1rem; padding: 6px 16px; border-radius: 30px; color: #fff; vertical-align: middle; position: relative; top: -10px; margin-left: 10px; }
+        
+        /* 經典版的完整文字區 */
+        .classic-poem-title { font-size: 1.3rem; font-weight: bold; text-align: center; margin: 15px 0 10px 0; color: #2c3e50; }
+        .classic-desc-box { background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 1rem; color: #555; line-height: 1.6; white-space: pre-line; text-align: justify; }
+
+        /* 經典版中的八星列表 (維持下拉) */
+        .star-list-classic { display: flex; flex-direction: column; gap: 10px; }
+        .star-row-classic { 
+            display: flex; align-items: flex-start; 
+            border-bottom: 1px dashed #eee; padding: 12px 0; 
+            cursor: pointer; transition: background 0.2s;
+        }
+        .star-row-classic:hover { background-color: #fcfcfc; }
+        .sp-classic { font-size: 2rem; font-weight: bold; width: 80px; text-align: center; flex-shrink: 0; }
+        .si-classic { margin-left: 15px; flex: 1; min-width: 0; }
+        .sn-classic { font-weight: bold; font-size: 1.2rem; margin-bottom: 6px; }
+        
+        /* =========================================
+           MODE B: 批次數值 (緊湊列表)
+           ========================================= */
+        .batch-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
 
         .batch-row {
-            background: #fff;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            overflow: hidden;
-            border: 1px solid #eee;
+            background: #fff; border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden; border: 1px solid #eee;
         }
 
-        /* 緊湊 Header */
         .batch-header {
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: background 0.2s;
+            padding: 10px 15px; display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; transition: background 0.2s;
         }
-        .batch-header:hover { background-color: #f8f9fa; }
+        .batch-header:hover { background-color: #f4f6f7; }
 
-        .bh-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-        .rank-idx { font-size: 0.9rem; color: #999; width: 20px; }
-        .num-main { font-size: 1.2rem; font-weight: bold; color: #333; font-family: monospace; letter-spacing: 1px; }
-        .tag-plate { font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; background: #eee; color: #555; }
+        .bh-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .rank-idx { font-size: 0.9rem; color: #aaa; width: 25px; }
+        .num-main { font-size: 1.3rem; font-weight: bold; color: #333; font-family: monospace; letter-spacing: 1px; }
+        .tag-plate { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; background: #eee; color: #555; }
         
-        .bh-right { display: flex; align-items: center; gap: 10px; }
-        .star-display { font-size: 1rem; letter-spacing: 1px; }
-        .red-count { font-size: 0.8rem; color: #888; }
+        .bh-right { display: flex; align-items: center; gap: 15px; }
+        .star-display { font-size: 1.1rem; letter-spacing: 2px; }
+        .red-count { font-size: 0.85rem; color: #888; }
         .arrow-icon { font-size: 0.8rem; color: #ccc; transition: transform 0.3s; }
         
-        /* 展開後的詳細區塊 (極致緊湊) */
-        .batch-detail {
-            display: none; /* 預設隱藏 */
-            padding: 10px;
-            background-color: #fafafa;
-            border-top: 1px solid #eee;
-        }
+        /* 批次展開內容 (緊湊網格) */
+        .batch-detail { display: none; padding: 15px; background-color: #fafafa; border-top: 1px solid #eee; }
         .batch-row.active .batch-detail { display: block; }
         .batch-row.active .arrow-icon { transform: rotate(180deg); }
 
-        /* 詳細內容三欄排版 */
-        .detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         
-        .mini-mod {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 8px;
-        }
-        
-        .mini-head {
-            font-size: 0.9rem; font-weight: bold; color: #555; 
-            border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px;
-        }
+        .mini-mod { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; }
+        .mini-head { font-size: 0.9rem; font-weight: bold; color: #777; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
+        .mini-result { font-size: 1rem; margin-bottom: 5px; display: flex; align-items: baseline; gap: 8px; }
+        .mini-result strong { font-size: 1.4rem; }
+        .mini-text { font-size: 0.9rem; color: #666; line-height: 1.4; white-space: pre-line; }
 
-        .mini-result { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-        .mini-result strong { font-size: 1.1rem; }
-        
-        .mini-text { font-size: 0.85rem; color: #666; line-height: 1.4; white-space: pre-line; }
+        .mini-star-row { display: flex; align-items: baseline; gap: 8px; font-size: 0.9rem; border-bottom: 1px dotted #eee; padding: 4px 0;}
+        .ms-pair { font-weight: bold; font-family: monospace; font-size: 1.1rem; width: 30px; }
+        .ms-desc { flex: 1; color: #777; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* 八星在緊湊模式下的列表 */
-        .mini-star-list { display: flex; flex-direction: column; gap: 4px; }
-        .mini-star-row { display: flex; align-items: baseline; gap: 6px; font-size: 0.85rem; border-bottom: 1px dotted #eee; padding-bottom: 2px;}
-        .ms-pair { font-weight: bold; font-family: monospace; font-size: 1rem; width: 25px; }
-        .ms-name { font-weight: bold; width: 35px; }
-        .ms-desc { flex: 1; color: #777; font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        /* 點擊展開八星說明 */
-        .ms-desc.expanded { white-space: pre-line; }
+        /* =========================================
+           共用元件：文字摺疊 (Accordion Text)
+           ========================================= */
+        .text-collapse-box { position: relative; padding-right: 25px; cursor: pointer; }
+        .text-collapse { 
+            font-size: 0.95rem; color: #555; line-height: 1.5; white-space: pre-line;
+            display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+            transition: all 0.3s;
+        }
+        .text-collapse.show-full { -webkit-line-clamp: unset; }
+        .collapse-icon { position: absolute; right: 0; top: 2px; font-size: 0.8rem; color: #999; transition: transform 0.3s; }
+        .text-collapse.show-full + .collapse-icon { transform: rotate(180deg); }
 
-        /* 顏色定義 */
+        /* 顏色工具 (包含新的八星黑) */
         .c-red { color: var(--red); }
         .c-blue { color: var(--blue); }
         .c-green { color: var(--green); }
-        .c-black { color: var(--black); }
+        .c-black { color: var(--black); } /* 預設灰黑 */
+        .c-pure-black { color: var(--star-bad); font-weight: bold; } /* 八星凶數純黑 */
+
         .bg-red { background-color: var(--red); }
         .bg-blue { background-color: var(--blue); }
         .bg-green { background-color: var(--green); }
         .bg-black { background-color: var(--black); }
+        .bg-pure-black { background-color: var(--star-bad); }
 
         /* RWD */
-        @media (max-width: 700px) {
-            .dashboard-single { flex-direction: column; }
-            .detail-grid { grid-template-columns: 1fr; gap: 8px; }
-            .bh-left { flex-direction: column; align-items: flex-start; gap: 2px; }
-            .tag-plate { font-size: 0.7rem; }
+        @media (max-width: 800px) {
+            .dashboard-classic { flex-direction: column; }
+            .classic-card { width: 100%; box-sizing: border-box; }
+            .detail-grid { grid-template-columns: 1fr; gap: 10px; }
+            .bh-left { flex-direction: column; align-items: flex-start; gap: 4px; }
+        }
+
+        @media print {
+            .input-container { display: none; }
+            .text-collapse { display: block !important; -webkit-line-clamp: unset !important; }
+            .collapse-icon { display: none; }
+            .batch-detail { display: block !important; } /* 列印時展開批次詳情 */
         }
     </style>
 </head>
 <body>
 
 <div class="input-container">
-    <h1>數字吉凶綜合分析 <span style="font-size:0.7em; color:#e74c3c;">v2.0</span></h1>
-    <div class="sub-hint">輸入單一數字、多個數字</div>
+    <h1>全方位數字分析 <span style="font-size:0.7em; color:#e74c3c;">v2.0</span></h1>
+    <div class="sub-hint">輸入單一數字、多號碼</div>
     <div class="input-group">
-        <input type="text" id="numInput" placeholder="例: 1688" onkeypress="if(event.key==='Enter') runAnalysis()">
+        <input type="text" id="numInput" placeholder="例: 168, 888" onkeypress="if(event.key==='Enter') runAnalysis()">
         <button onclick="runAnalysis()">分析</button>
     </div>
 </div>
 
-<div id="singleView" class="dashboard-single" style="display: none;">
-    <div class="module-card">
-        <div class="mod-title">【總和模組】</div>
+<div id="singleView" class="dashboard-classic" style="display: none;">
+    <div class="classic-card">
+        <div class="classic-title">【總和模組】</div>
         <div id="singleResult1"></div>
     </div>
-    <div class="module-card">
-        <div class="mod-title">【81模組】</div>
+    <div class="classic-card">
+        <div class="classic-title">【81模組】</div>
         <div id="singleResult2"></div>
     </div>
-    <div class="module-card">
-        <div class="mod-title">【八星模組】</div>
-        <div id="singleResult3"></div>
+    <div class="classic-card">
+        <div class="classic-title">【八星模組】</div>
+        <div id="singleResult3" class="star-list-classic"></div>
     </div>
 </div>
 
@@ -187,18 +202,23 @@
     // ================= DATA =================
     const listRedSum = [1,3,5,7,8,9,11,13,15,17,23,24,31,33,35,37,39,41,45,48];
     const listBlueSum = [6,18,14,16,19,22,26,29,32];
-    const listPlateWarn = [6,18,14,16,19,22,26,29,32];
-    const listPlateGood = [1,3,5,7,8,9,11,13,15,17,23,24,31,33,35,37,39,41,45,48];
+    
+    // 車牌建議清單
+    const listPlateWarn = [6, 18, 14, 16, 19, 22, 26, 29, 32];
+    const listPlateGood = [1, 3, 5, 7, 8, 9, 11, 13, 15, 17, 23, 24, 31, 33, 35, 37, 39, 41, 45, 48];
 
+    // 八星定義 (注意 type 屬性調整)
     const starDefs = {
         "生氣": { text: "大吉 (木)\n貴人多助，事業財運強。", type: "red" },
         "天醫": { text: "次吉 (土)\n財富健康，正財穩定。", type: "red" },
         "延年": { text: "中吉 (金)\n獨當一面，長壽守財。", type: "red" },
         "伏位": { text: "小吉 (木)\n蓄勢待發，平穩安定。", type: "red" },
-        "絕命": { text: "大凶 (金)\n大起大落，意外破財。", type: "blue" },
-        "五鬼": { text: "次凶 (火)\n反覆無常，血光是非。", type: "blue" },
-        "六煞": { text: "中凶 (水)\n爛桃花多，人際糾葛。", type: "blue" },
-        "禍害": { text: "小凶 (土)\n口舌之爭，小人作祟。", type: "blue" }
+        
+        // 凶星改為 pure-black
+        "絕命": { text: "大凶 (金)\n大起大落，意外破財。", type: "pure-black" },
+        "五鬼": { text: "次凶 (火)\n反覆無常，血光是非。", type: "pure-black" },
+        "六煞": { text: "中凶 (水)\n爛桃花多，人際糾葛。", type: "pure-black" },
+        "禍害": { text: "小凶 (土)\n口舌之爭，小人作祟。", type: "pure-black" }
     };
 
     const starMap = {
@@ -305,26 +325,39 @@
         // Mod 1
         let m1Key = sum > 81 ? (sum % 80 || 80) : sum;
         let m1Info = db81[m1Key] || ["平", "未知", "無"];
+        
+        // 模組1 顏色判斷 (含車牌建議)
         let m1Color = getColor(m1Info[0]);
         let m1Suffix = "";
-        if (listPlateWarn.includes(sum)) m1Suffix = " (車牌不建議)";
-        else if (listPlateGood.includes(sum)) m1Suffix = " (車牌建議)";
+        
+        if (listPlateWarn.includes(sum)) {
+            m1Suffix = " (車牌不建議)";
+        } else if (listPlateGood.includes(sum)) {
+            m1Suffix = " (車牌建議)";
+        }
 
         // Mod 2
-        let m2Val = sum % 80 || 80;
+        let m2Val = 0;
+        try {
+            let bigVal = BigInt(str);
+            let rem = Number(bigVal % 80n);
+            m2Val = (rem === 0) ? 80 : rem;
+        } catch(e) { m2Val = sum % 80 || 80; }
+
         let m2Info = db81[m2Val] || ["平", "未知", "無"];
         let m2Color = getColor(m2Info[0]);
 
-        // Mod 3
+        // Mod 3 (八星)
         let stars = [];
         if (str.length >= 2) {
             for (let i = 0; i < str.length - 1; i++) {
                 let pair = str.substr(i, 2);
                 let sName = starMap[pair];
                 if (sName) {
-                    stars.push({ p: pair, n: sName, ...starDefs[sName] });
+                    let info = starDefs[sName];
+                    stars.push({ p: pair, n: sName, type: info.type, color: info.type, text: info.text });
                 } else {
-                    stars.push({ p: pair, n: "中性", text: "無特殊磁場", type: "black" });
+                    stars.push({ p: pair, n: "中性", type: "black", color: "black", text: "無特殊含意" });
                 }
             }
         }
@@ -333,28 +366,24 @@
         let redCount = 0;
         if (m1Color === "red") redCount++;
         if (m2Color === "red") redCount++;
-        stars.forEach(s => { if (s.type === "red") redCount++; });
+        stars.forEach(s => { if (s.color === "red") redCount++; });
 
         return {
             input: str,
             redCount,
             plate: m1Suffix,
-            m1: { val: sum, ...formatInfo(m1Info), c: m1Color, suffix: m1Suffix },
-            m2: { val: m2Val, ...formatInfo(m2Info), c: m2Color },
+            m1: { val: sum, type: m1Info[0], title: m1Info[1], desc: m1Info[2], c: m1Color, suffix: m1Suffix },
+            m2: { val: m2Val, type: m2Info[0], title: m2Info[1], desc: m2Info[2], c: m2Color },
             m3: stars
         };
     }
 
-    function getColor(typeStr) {
-        if (typeStr.includes("吉") && typeStr.includes("凶")) return "green";
-        if (typeStr.includes("半")) return "green";
-        if (typeStr.includes("吉")) return "red";
-        if (typeStr.includes("凶")) return "blue";
+    function getColor(t) {
+        if (t.includes("吉") && t.includes("凶")) return "green";
+        if (t.includes("半")) return "green";
+        if (t.includes("吉")) return "red";
+        if (t.includes("凶")) return "blue";
         return "black";
-    }
-
-    function formatInfo(arr) {
-        return { type: arr[0], title: arr[1], desc: arr[2] };
     }
 
     function runAnalysis() {
@@ -370,13 +399,10 @@
             document.getElementById("batchView").style.display = "flex";
 
             let results = inputs.map((s, i) => ({ ...analyzeNumber(s), idx: i }));
-            
-            // Sort: Red Count DESC, then Input Index ASC
             results.sort((a, b) => {
                 if (b.redCount !== a.redCount) return b.redCount - a.redCount;
                 return a.idx - b.idx;
             });
-
             renderBatch(results);
         } else {
             // Single Mode
@@ -389,37 +415,39 @@
     }
 
     function renderSingle(data) {
-        // Mod 1
+        // Mod 1 (Classic Big Card)
         document.getElementById("singleResult1").innerHTML = `
-            <span class="big-num c-${data.m1.c}">${data.m1.val}</span>
-            <div style="text-align:center;margin-bottom:10px;">
-                <span class="badge bg-${data.m1.c}">${data.m1.type}${data.m1.suffix}</span>
+            <span class="classic-num c-${data.m1.c}">${data.m1.val}</span>
+            <div style="text-align:center;">
+                <span class="classic-badge bg-${data.m1.c}">${data.m1.type}${data.m1.suffix}</span>
             </div>
-            <div class="poem-title">${data.m1.title}</div>
-            <div class="desc-box">${data.m1.desc}</div>
+            <div class="classic-poem-title">${data.m1.title}</div>
+            <div class="classic-desc-box">${data.m1.desc}</div>
         `;
-        // Mod 2
+        
+        // Mod 2 (Classic Big Card)
         document.getElementById("singleResult2").innerHTML = `
-            <span class="big-num c-${data.m2.c}">${data.m2.val}</span>
-            <div style="text-align:center;margin-bottom:10px;">
-                <span class="badge bg-${data.m2.c}">${data.m2.type}</span>
+            <span class="classic-num c-${data.m2.c}">${data.m2.val}</span>
+            <div style="text-align:center;">
+                <span class="classic-badge bg-${data.m2.c}">${data.m2.type}</span>
             </div>
-            <div class="poem-title">${data.m2.title}</div>
-            <div class="desc-box">${data.m2.desc}</div>
+            <div class="classic-poem-title">${data.m2.title}</div>
+            <div class="classic-desc-box">${data.m2.desc}</div>
         `;
-        // Mod 3
+
+        // Mod 3 (List + Toggle + Red/Black)
         let m3Html = "";
-        if (data.m3.length === 0) m3Html = "<p align='center'>無</p>";
+        if (data.m3.length === 0) m3Html = "<p align='center'>無資料</p>";
         else {
             data.m3.forEach(s => {
                 m3Html += `
-                <div class="star-row" onclick="this.querySelector('.star-meaning').classList.toggle('show-full'); this.querySelector('.toggle-icon').style.transform = this.querySelector('.star-meaning').classList.contains('show-full') ? 'rotate(180deg)' : 'rotate(0deg)';">
-                    <div class="star-pair c-${s.type}">${s.p}</div>
-                    <div class="star-info">
-                        <div class="star-name c-${s.type}">${s.n}</div>
-                        <div class="star-meaning-box">
-                            <div class="star-meaning">${s.text}</div>
-                            <span class="toggle-icon">▼</span>
+                <div class="star-row-classic" onclick="this.querySelector('.text-collapse').classList.toggle('show-full');">
+                    <div class="sp-classic c-${s.type}">${s.p}</div>
+                    <div class="si-classic">
+                        <div class="sn-classic c-${s.type}">${s.n}</div>
+                        <div class="text-collapse-box">
+                            <div class="text-collapse">${s.text}</div>
+                            <span class="collapse-icon">▼</span>
                         </div>
                     </div>
                 </div>`;
@@ -432,18 +460,16 @@
         const c = document.getElementById("batchView");
         c.innerHTML = "";
         results.forEach((item, index) => {
-            // Build Stars HTML
             let stars = "";
             stars += `<span class="c-${item.m1.c}">★</span>`;
             stars += `<span class="c-${item.m2.c}">★</span>`;
             item.m3.forEach(s => stars += `<span class="c-${s.type}">★</span>`);
 
-            // Build Details HTML (Grid)
+            // Detail Grid
             let m3List = item.m3.map(s => `
                 <div class="mini-star-row">
                     <span class="ms-pair c-${s.type}">${s.p}</span>
-                    <span class="ms-name c-${s.type}">${s.n}</span>
-                    <span class="ms-desc">${s.text}</span>
+                    <span class="ms-desc">${s.n}</span>
                 </div>
             `).join("");
 
@@ -467,7 +493,7 @@
                     </div>
                     <div class="mini-mod">
                         <div class="mini-head">【八星】</div>
-                        <div class="mini-star-list">${m3List || "無"}</div>
+                        ${m3List || "無"}
                     </div>
                 </div>
             `;
