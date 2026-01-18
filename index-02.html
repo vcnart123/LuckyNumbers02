@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全方位數字吉凶分析 (進化版 2.1)</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #fff;
+            --text-main: #333;
+            --text-sub: #666;
+            --red: #e74c3c;
+            --blue: #3498db;
+            --green: #2ecc71;
+            --black: #7f8c8d;
+            --border: #ddd;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        /* --- 輸入區 --- */
+        .input-container {
+            max-width: 600px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        h1 { margin: 0 0 5px 0; font-size: 1.4rem; color: #2c3e50; }
+        .sub-hint { font-size: 0.85rem; color: #999; margin-bottom: 10px; }
+
+        .input-group { display: flex; gap: 8px; justify-content: center; }
+        input { padding: 8px; font-size: 1rem; width: 65%; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 16px; font-size: 1rem; background-color: #34495e; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+
+        /* --- 單一顯示模式 (保留原樣) --- */
+        .dashboard-single { display: flex; gap: 10px; align-items: flex-start; }
+        .module-card {
+            flex: 1; background: #fff; border-radius: 8px; padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-top: 4px solid #999;
+        }
+        .module-card:nth-child(1) { border-top-color: #2c3e50; }
+        .module-card:nth-child(2) { border-top-color: #7f8c8d; }
+        .module-card:nth-child(3) { border-top-color: #bdc3c7; }
+        
+        .mod-title { font-size: 1.1rem; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; text-align: center; }
+        .big-num { font-size: 2.5rem; font-weight: bold; text-align: center; display: block; margin: 5px 0; }
+        .badge { display: inline-block; font-size: 0.9rem; padding: 2px 8px; border-radius: 12px; color: #fff; vertical-align: middle; margin-left: 5px; position: relative; top: -5px;}
+        .desc-box { background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 0.9rem; color: #555; line-height: 1.5; white-space: pre-line; }
+
+        /* --- 批次列表模式 (Compact Layout) --- */
+        .batch-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+
+        .batch-row {
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        /* 緊湊 Header */
+        .batch-header {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .batch-header:hover { background-color: #f8f9fa; }
+
+        .bh-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .rank-idx { font-size: 0.9rem; color: #999; width: 20px; }
+        .num-main { font-size: 1.2rem; font-weight: bold; color: #333; font-family: monospace; letter-spacing: 1px; }
+        .tag-plate { font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; background: #eee; color: #555; }
+        
+        .bh-right { display: flex; align-items: center; gap: 10px; }
+        .star-display { font-size: 1rem; letter-spacing: 1px; }
+        .red-count { font-size: 0.8rem; color: #888; }
+        .arrow-icon { font-size: 0.8rem; color: #ccc; transition: transform 0.3s; }
+        
+        /* 展開後的詳細區塊 (極致緊湊) */
+        .batch-detail {
+            display: none; /* 預設隱藏 */
+            padding: 10px;
+            background-color: #fafafa;
+            border-top: 1px solid #eee;
+        }
+        .batch-row.active .batch-detail { display: block; }
+        .batch-row.active .arrow-icon { transform: rotate(180deg); }
+
+        /* 詳細內容三欄排版 */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .mini-mod {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 8px;
+        }
+        
+        .mini-head {
+            font-size: 0.9rem; font-weight: bold; color: #555; 
+            border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px;
+        }
+
+        .mini-result { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .mini-result strong { font-size: 1.1rem; }
+        
+        .mini-text { font-size: 0.85rem; color: #666; line-height: 1.4; white-space: pre-line; }
+
+        /* 八星在緊湊模式下的列表 */
+        .mini-star-list { display: flex; flex-direction: column; gap: 4px; }
+        .mini-star-row { display: flex; align-items: baseline; gap: 6px; font-size: 0.85rem; border-bottom: 1px dotted #eee; padding-bottom: 2px;}
+        .ms-pair { font-weight: bold; font-family: monospace; font-size: 1rem; width: 25px; }
+        .ms-name { font-weight: bold; width: 35px; }
+        .ms-desc { flex: 1; color: #777; font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* 點擊展開八星說明 */
+        .ms-desc.expanded { white-space: pre-line; }
+
+        /* 顏色定義 */
+        .c-red { color: var(--red); }
+        .c-blue { color: var(--blue); }
+        .c-green { color: var(--green); }
+        .c-black { color: var(--black); }
+        .bg-red { background-color: var(--red); }
+        .bg-blue { background-color: var(--blue); }
+        .bg-green { background-color: var(--green); }
+        .bg-black { background-color: var(--black); }
+
+        /* RWD */
+        @media (max-width: 700px) {
+            .dashboard-single { flex-direction: column; }
+            .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+            .bh-left { flex-direction: column; align-items: flex-start; gap: 2px; }
+            .tag-plate { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="input-container">
+    <h1>數字吉凶綜合分析 <span style="font-size:0.7em; color:#e74c3c;">v2.0</span></h1>
+    <div class="sub-hint">輸入單一數字、多個數字</div>
+    <div class="input-group">
+        <input type="text" id="numInput" placeholder="例: 1688" onkeypress="if(event.key==='Enter') runAnalysis()">
+        <button onclick="runAnalysis()">分析</button>
+    </div>
+</div>
+
+<div id="singleView" class="dashboard-single" style="display: none;">
+    <div class="module-card">
+        <div class="mod-title">【總和模組】</div>
+        <div id="singleResult1"></div>
+    </div>
+    <div class="module-card">
+        <div class="mod-title">【81模組】</div>
+        <div id="singleResult2"></div>
+    </div>
+    <div class="module-card">
+        <div class="mod-title">【八星模組】</div>
+        <div id="singleResult3"></div>
+    </div>
+</div>
+
+<div id="batchView" class="batch-container" style="display: none;"></div>
+
+<script>
+    // ================= DATA =================
+    const listRedSum = [1,3,5,7,8,9,11,13,15,17,23,24,31,33,35,37,39,41,45,48];
+    const listBlueSum = [6,18,14,16,19,22,26,29,32];
+    const listPlateWarn = [6,18,14,16,19,22,26,29,32];
+    const listPlateGood = [1,3,5,7,8,9,11,13,15,17,23,24,31,33,35,37,39,41,45,48];
+
+    const starDefs = {
+        "生氣": { text: "大吉 (木)\n貴人多助，事業財運強。", type: "red" },
+        "天醫": { text: "次吉 (土)\n財富健康，正財穩定。", type: "red" },
+        "延年": { text: "中吉 (金)\n獨當一面，長壽守財。", type: "red" },
+        "伏位": { text: "小吉 (木)\n蓄勢待發，平穩安定。", type: "red" },
+        "絕命": { text: "大凶 (金)\n大起大落，意外破財。", type: "blue" },
+        "五鬼": { text: "次凶 (火)\n反覆無常，血光是非。", type: "blue" },
+        "六煞": { text: "中凶 (水)\n爛桃花多，人際糾葛。", type: "blue" },
+        "禍害": { text: "小凶 (土)\n口舌之爭，小人作祟。", type: "blue" }
+    };
+
+    const starMap = {
+        "14": "生氣", "41": "生氣", "28": "生氣", "82": "生氣", "39": "生氣", "93": "生氣", "67": "生氣", "76": "生氣",
+        "13": "天醫", "31": "天醫", "27": "天醫", "72": "天醫", "49": "天醫", "94": "天醫", "68": "天醫", "86": "天醫",
+        "19": "延年", "91": "延年", "26": "延年", "62": "延年", "34": "延年", "43": "延年", "78": "延年", "87": "延年",
+        "11": "伏位", "22": "伏位", "33": "伏位", "44": "伏位", "66": "伏位", "77": "伏位", "88": "伏位", "99": "伏位",
+        "12": "絕命", "21": "絕命", "37": "絕命", "73": "絕命", "48": "絕命", "84": "絕命", "69": "絕命", "96": "絕命",
+        "18": "五鬼", "81": "五鬼", "24": "五鬼", "42": "五鬼", "36": "五鬼", "63": "五鬼", "79": "五鬼", "97": "五鬼",
+        "16": "六煞", "61": "六煞", "29": "六煞", "92": "六煞", "38": "六煞", "83": "六煞", "47": "六煞", "74": "六煞",
+        "17": "禍害", "71": "禍害", "23": "禍害", "32": "禍害", "46": "禍害", "64": "禍害", "89": "禍害", "98": "禍害"
+    };
+
+    const db81 = {
+        1: ["吉", "開天闢地", "大吉之數，萬事開創。"],
+        2: ["凶", "混沌未明", "混亂動盪，孤掌難鳴。"],
+        3: ["吉", "祥瑞盡收", "天時地利，名利雙收。"],
+        4: ["凶", "流於破敗", "孤傲自賞，苦難無助。"],
+        5: ["吉", "福澤綿延", "陰陽和合，富貴康寧。"],
+        6: ["吉", "吉人天相", "天之庇佑，安穩順遂。"],
+        7: ["吉", "剛強凌盛", "剛毅果斷，必成大業。"],
+        8: ["吉", "堅毅聰穎", "排除萬難，意志堅定。"],
+        9: ["凶", "窮困受阻", "名利難獲，生不逢時。"],
+        10: ["凶", "灰暗潦倒", "烏雲罩頂，黯淡無光。"],
+        11: ["吉", "萬象重生", "草木逢春，穩健踏實。"],
+        12: ["凶", "柔弱無我", "意志薄弱，難成大事。"],
+        13: ["吉", "才高八斗", "智謀奇才，平步青雲。"],
+        14: ["凶", "載浮載沉", "家緣淡薄，孤苦無依。"],
+        15: ["吉", "福壽雙全", "福德圓滿，富貴榮華。"],
+        16: ["吉", "德高望重", "貴人多助，成就大業。"],
+        17: ["吉", "權頃排難", "剛強突破，權威在握。"],
+        18: ["吉", "謀智並濟", "百事亨通，名利雙收。"],
+        19: ["凶", "孤寡多難", "多災多難，聰明反被聰明誤。"],
+        20: ["凶", "險象叢生", "進退維谷，災厄頻仍。"],
+        21: ["吉", "權威凌人", "光風霽月，首領之格。"],
+        22: ["凶", "凋零挫敗", "懷才不遇，事與願違。"],
+        23: ["吉", "大器果斷", "旭日東昇，名揚四海。"],
+        24: ["吉", "財源豐厚", "白手起家，金錢豐盈。"],
+        25: ["吉", "英挺聰慧", "資性英敏，多才多藝。"],
+        26: ["凶帶吉", "雲濤多變", "波瀾起伏，千變萬化。"],
+        27: ["吉帶凶", "孤傲自賞", "多智多謀，成敗難定。"],
+        28: ["凶", "別離敗壞", "豪爽多災，親友緣薄。"],
+        29: ["吉", "足智有謀", "才高八斗，權力在握。"],
+        30: ["吉帶凶", "起伏不定", "浮沉未定，吉凶難測。"],
+        31: ["吉", "圓滿順遂", "智勇雙全，大業可成。"],
+        32: ["吉", "貴人相助", "如龍得水，僥倖多望。"],
+        33: ["吉", "剛直果決", "光輝權威，斷行果敢。"],
+        34: ["凶", "流離失所", "災難不絕，難望成功。"],
+        35: ["吉", "心慈上進", "溫和平靜，優雅發展。"],
+        36: ["凶", "浪起波瀾", "波瀾萬丈，俠義多災。"],
+        37: ["吉", "吉相忠厚", "逢凶化吉，德望兼備。"],
+        38: ["吉凶各半", "平實無奇", "薄弱無力，難望大業。"],
+        39: ["吉", "前程似錦", "富貴榮華，長壽之象。"],
+        40: ["吉帶凶", "詭變浮沉", "退守得安，冒進招災。"],
+        41: ["吉", "福壽有德", "德望高大，名利雙收。"],
+        42: ["吉帶凶", "奇藝難成", "博學多藝，十藝九不成。"],
+        43: ["凶帶吉", "意志不堅", "外祥內苦，雨後之花。"],
+        44: ["凶", "黯淡無光", "愁眉不展，難望成功。"],
+        45: ["吉", "諸事順遂", "新生泰運，順風揚帆。"],
+        46: ["凶", "坎坷乖舛", "羅網系身，困難重重。"],
+        47: ["吉", "豐收有成", "開花結果，權威顯達。"],
+        48: ["吉", "德高溫厚", "才德兼備，群賢聚合。"],
+        49: ["吉凶各半", "風雲變色", "吉凶未定，辛勞不斷。"],
+        50: ["吉凶各半", "成敗起伏", "吉凶互見，一成一敗。"],
+        51: ["吉凶各半", "盛衰浮沉", "盛衰不常，波瀾重疊。"],
+        52: ["吉", "遠見卓識", "先見之明，一躍得志。"],
+        53: ["吉凶各半", "秀而不實", "外觀隆昌，內隱禍患。"],
+        54: ["凶", "哀而傷悲", "多難折磨，難望成功。"],
+        55: ["吉凶各半", "虛有其表", "外祥內苦，障礙重重。"],
+        56: ["凶", "好大喜功", "缺乏實行，難望成功。"],
+        57: ["吉", "枯木逢春", "寒雪青松，最大榮運。"],
+        58: ["吉", "漸入佳境", "先苦後甘，大器晚成。"],
+        59: ["凶", "猶疑不定", "缺乏決斷，難成大業。"],
+        60: ["凶", "無智無謀", "黑暗無光，搖擺不定。"],
+        61: ["吉", "富庶繁華", "名利雙收，繁榮富貴。"],
+        62: ["凶", "屋漏逢雨", "基礎虛弱，漸入衰退。"],
+        63: ["吉", "榮貴集身", "萬物承惠，繁榮之象。"],
+        64: ["凶", "悲愁無盡", "骨肉分離，徒勞無功。"],
+        65: ["吉", "福祿圓滿", "富貴長壽，公門顯達。"],
+        66: ["凶", "烏雲蔽日", "內外不和，信用缺乏。"],
+        67: ["吉", "利祿亨通", "財路亨通，志氣堅強。"],
+        68: ["吉", "豪氣干雲", "興家立業，寬大仁厚。"],
+        69: ["凶", "逆境踟躕", "動搖不安，陷於逆境。"],
+        70: ["凶", "苦陷淒涼", "慘淡經營，難免貧困。"],
+        71: ["吉帶凶", "徒生波瀾", "吉凶參半，難保平安。"],
+        72: ["凶帶吉", "劫難藏身", "外祥內苦，必陷困苦。"],
+        73: ["吉帶凶", "有志無力", "志大才疏，難望成功。"],
+        74: ["凶", "花殘凋零", "坐吃山空，無能為力。"],
+        75: ["吉帶凶", "不妄則吉", "守則可安，進則招災。"],
+        76: ["凶", "家破離散", "傾家蕩產，骨肉分離。"],
+        77: ["吉凶各半", "喜樂無常", "吉凶參半，得失相伴。"],
+        78: ["吉帶凶", "轉眼成敗", "吉凶互見，晚景淒涼。"],
+        79: ["凶", "日月無光", "前途無光，希望渺茫。"],
+        80: ["凶", "事事相悖", "得而復失，枉費心機。"],
+        81: ["吉", "祥瑞雲光", "最極之數，還本歸元。"]
+    };
+
+    // ================= LOGIC =================
+
+    function analyzeNumber(str) {
+        let sum = 0;
+        for (let c of str) sum += parseInt(c);
+
+        // Mod 1
+        let m1Key = sum > 81 ? (sum % 80 || 80) : sum;
+        let m1Info = db81[m1Key] || ["平", "未知", "無"];
+        let m1Color = getColor(m1Info[0]);
+        let m1Suffix = "";
+        if (listPlateWarn.includes(sum)) m1Suffix = " (車牌不建議)";
+        else if (listPlateGood.includes(sum)) m1Suffix = " (車牌建議)";
+
+        // Mod 2
+        let m2Val = sum % 80 || 80;
+        let m2Info = db81[m2Val] || ["平", "未知", "無"];
+        let m2Color = getColor(m2Info[0]);
+
+        // Mod 3
+        let stars = [];
+        if (str.length >= 2) {
+            for (let i = 0; i < str.length - 1; i++) {
+                let pair = str.substr(i, 2);
+                let sName = starMap[pair];
+                if (sName) {
+                    stars.push({ p: pair, n: sName, ...starDefs[sName] });
+                } else {
+                    stars.push({ p: pair, n: "中性", text: "無特殊磁場", type: "black" });
+                }
+            }
+        }
+
+        // Count Red Stars
+        let redCount = 0;
+        if (m1Color === "red") redCount++;
+        if (m2Color === "red") redCount++;
+        stars.forEach(s => { if (s.type === "red") redCount++; });
+
+        return {
+            input: str,
+            redCount,
+            plate: m1Suffix,
+            m1: { val: sum, ...formatInfo(m1Info), c: m1Color, suffix: m1Suffix },
+            m2: { val: m2Val, ...formatInfo(m2Info), c: m2Color },
+            m3: stars
+        };
+    }
+
+    function getColor(typeStr) {
+        if (typeStr.includes("吉") && typeStr.includes("凶")) return "green";
+        if (typeStr.includes("半")) return "green";
+        if (typeStr.includes("吉")) return "red";
+        if (typeStr.includes("凶")) return "blue";
+        return "black";
+    }
+
+    function formatInfo(arr) {
+        return { type: arr[0], title: arr[1], desc: arr[2] };
+    }
+
+    function runAnalysis() {
+        const raw = document.getElementById("numInput").value;
+        if (!raw.trim()) { alert("請輸入數字"); return; }
+
+        if (raw.includes(",") || raw.includes("，")) {
+            // Batch Mode
+            const inputs = raw.split(/[,，]/).map(s => s.trim().replace(/\D/g, "")).filter(s => s);
+            if (inputs.length === 0) return;
+
+            document.getElementById("singleView").style.display = "none";
+            document.getElementById("batchView").style.display = "flex";
+
+            let results = inputs.map((s, i) => ({ ...analyzeNumber(s), idx: i }));
+            
+            // Sort: Red Count DESC, then Input Index ASC
+            results.sort((a, b) => {
+                if (b.redCount !== a.redCount) return b.redCount - a.redCount;
+                return a.idx - b.idx;
+            });
+
+            renderBatch(results);
+        } else {
+            // Single Mode
+            const str = raw.replace(/\D/g, "");
+            if (!str) return;
+            document.getElementById("singleView").style.display = "flex";
+            document.getElementById("batchView").style.display = "none";
+            renderSingle(analyzeNumber(str));
+        }
+    }
+
+    function renderSingle(data) {
+        // Mod 1
+        document.getElementById("singleResult1").innerHTML = `
+            <span class="big-num c-${data.m1.c}">${data.m1.val}</span>
+            <div style="text-align:center;margin-bottom:10px;">
+                <span class="badge bg-${data.m1.c}">${data.m1.type}${data.m1.suffix}</span>
+            </div>
+            <div class="poem-title">${data.m1.title}</div>
+            <div class="desc-box">${data.m1.desc}</div>
+        `;
+        // Mod 2
+        document.getElementById("singleResult2").innerHTML = `
+            <span class="big-num c-${data.m2.c}">${data.m2.val}</span>
+            <div style="text-align:center;margin-bottom:10px;">
+                <span class="badge bg-${data.m2.c}">${data.m2.type}</span>
+            </div>
+            <div class="poem-title">${data.m2.title}</div>
+            <div class="desc-box">${data.m2.desc}</div>
+        `;
+        // Mod 3
+        let m3Html = "";
+        if (data.m3.length === 0) m3Html = "<p align='center'>無</p>";
+        else {
+            data.m3.forEach(s => {
+                m3Html += `
+                <div class="star-row" onclick="this.querySelector('.star-meaning').classList.toggle('show-full'); this.querySelector('.toggle-icon').style.transform = this.querySelector('.star-meaning').classList.contains('show-full') ? 'rotate(180deg)' : 'rotate(0deg)';">
+                    <div class="star-pair c-${s.type}">${s.p}</div>
+                    <div class="star-info">
+                        <div class="star-name c-${s.type}">${s.n}</div>
+                        <div class="star-meaning-box">
+                            <div class="star-meaning">${s.text}</div>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+        document.getElementById("singleResult3").innerHTML = m3Html;
+    }
+
+    function renderBatch(results) {
+        const c = document.getElementById("batchView");
+        c.innerHTML = "";
+        results.forEach((item, index) => {
+            // Build Stars HTML
+            let stars = "";
+            stars += `<span class="c-${item.m1.c}">★</span>`;
+            stars += `<span class="c-${item.m2.c}">★</span>`;
+            item.m3.forEach(s => stars += `<span class="c-${s.type}">★</span>`);
+
+            // Build Details HTML (Grid)
+            let m3List = item.m3.map(s => `
+                <div class="mini-star-row">
+                    <span class="ms-pair c-${s.type}">${s.p}</span>
+                    <span class="ms-name c-${s.type}">${s.n}</span>
+                    <span class="ms-desc">${s.text}</span>
+                </div>
+            `).join("");
+
+            let detailHtml = `
+                <div class="detail-grid">
+                    <div class="mini-mod">
+                        <div class="mini-head">【總和】</div>
+                        <div class="mini-result c-${item.m1.c}">
+                            <strong>${item.m1.val}</strong> 
+                            <span>${item.m1.type}</span>
+                        </div>
+                        <div class="mini-text">${item.m1.title}<br>${item.m1.desc}</div>
+                    </div>
+                    <div class="mini-mod">
+                        <div class="mini-head">【81數】</div>
+                        <div class="mini-result c-${item.m2.c}">
+                            <strong>${item.m2.val}</strong> 
+                            <span>${item.m2.type}</span>
+                        </div>
+                        <div class="mini-text">${item.m2.title}<br>${item.m2.desc}</div>
+                    </div>
+                    <div class="mini-mod">
+                        <div class="mini-head">【八星】</div>
+                        <div class="mini-star-list">${m3List || "無"}</div>
+                    </div>
+                </div>
+            `;
+
+            let div = document.createElement("div");
+            div.className = "batch-row";
+            div.innerHTML = `
+                <div class="batch-header" onclick="this.parentElement.classList.toggle('active')">
+                    <div class="bh-left">
+                        <span class="rank-idx">${index+1}.</span>
+                        <span class="num-main">${item.input}</span>
+                        ${item.plate ? `<span class="tag-plate">${item.plate}</span>` : ""}
+                    </div>
+                    <div class="bh-right">
+                        <div class="star-display">${stars}</div>
+                        <div class="red-count">(${item.redCount})</div>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                </div>
+                <div class="batch-detail">${detailHtml}</div>
+            `;
+            c.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>
